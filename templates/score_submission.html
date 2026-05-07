@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width:700px; margin:2rem auto;">
+    <!-- Project Info Card -->
+    <div class="glass-card" style="margin-bottom:1.5rem; padding:1.5rem 2rem;">
+        <p style="color:var(--accent-secondary); font-size:0.8rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.5rem;">📋 Project Being Evaluated</p>
+        <h2 style="font-size:1.6rem; margin-bottom:0.4rem;">{{ submission.project_title }}</h2>
+        <p style="color:var(--accent-primary); font-weight:600; margin-bottom:0.8rem;">Team: {{ submission.team.name }}</p>
+        <p style="color:var(--text-secondary); line-height:1.6; margin-bottom:1rem;">{{ submission.description }}</p>
+        <div style="display:flex; gap:0.7rem; flex-wrap:wrap;">
+            {% if submission.github_link %}
+                <a href="{{ submission.github_link }}" target="_blank" style="font-size:0.85rem; padding:0.4rem 1rem; background:rgba(255,255,255,0.06); border:1px solid var(--glass-border); border-radius:6px; color:var(--text-primary); text-decoration:none;">🔗 View on GitHub</a>
+            {% endif %}
+            {% if submission.project_file %}
+                <a href="{{ submission.project_file.url }}" download style="font-size:0.85rem; padding:0.4rem 1rem; background:rgba(99,102,241,0.15); border:1px solid rgba(99,102,241,0.3); border-radius:6px; color:#a5b4fc; text-decoration:none;">📦 Download ZIP</a>
+            {% endif %}
+            {% if submission.live_link %}
+                <a href="{{ submission.live_link }}" target="_blank" style="font-size:0.85rem; padding:0.4rem 1rem; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.25); border-radius:6px; color:#6ee7b7; text-decoration:none;">🌐 Live Demo</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Scoring Form -->
+    <div class="glass-card" style="padding:2rem;">
+        <h3 style="font-size:1.4rem; margin-bottom:0.4rem;">
+            {% if existing_score %}Update Your Score{% else %}Submit Your Score{% endif %}
+        </h3>
+        <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:2rem;">Each criterion is scored from <strong>0</strong> to <strong>10</strong>. Maximum total: <strong>30 points</strong>.</p>
+
+        <form method="post" id="scoreForm">
+            {% csrf_token %}
+
+            <!-- Criterion cards -->
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; margin-bottom:2rem;">
+                <!-- Innovation -->
+                <div style="background:rgba(139,92,246,0.08); border:1px solid rgba(139,92,246,0.2); border-radius:12px; padding:1.2rem; text-align:center;">
+                    <div style="font-size:1.8rem; margin-bottom:0.5rem;">💡</div>
+                    <label style="display:block; font-weight:700; font-size:0.9rem; margin-bottom:0.8rem; color:#c4b5fd;">Innovation</label>
+                    {{ form.innovation }}
+                    {% if form.innovation.errors %}<div style="color:#f87171; font-size:0.75rem; margin-top:0.3rem;">{{ form.innovation.errors }}</div>{% endif %}
+                </div>
+                <!-- Technical -->
+                <div style="background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.2); border-radius:12px; padding:1.2rem; text-align:center;">
+                    <div style="font-size:1.8rem; margin-bottom:0.5rem;">⚙️</div>
+                    <label style="display:block; font-weight:700; font-size:0.9rem; margin-bottom:0.8rem; color:#93c5fd;">Technical</label>
+                    {{ form.technical_complexity }}
+                    {% if form.technical_complexity.errors %}<div style="color:#f87171; font-size:0.75rem; margin-top:0.3rem;">{{ form.technical_complexity.errors }}</div>{% endif %}
+                </div>
+                <!-- UI/UX -->
+                <div style="background:rgba(236,72,153,0.08); border:1px solid rgba(236,72,153,0.2); border-radius:12px; padding:1.2rem; text-align:center;">
+                    <div style="font-size:1.8rem; margin-bottom:0.5rem;">🎨</div>
+                    <label style="display:block; font-weight:700; font-size:0.9rem; margin-bottom:0.8rem; color:#f9a8d4;">UI / UX</label>
+                    {{ form.ui_ux }}
+                    {% if form.ui_ux.errors %}<div style="color:#f87171; font-size:0.75rem; margin-top:0.3rem;">{{ form.ui_ux.errors }}</div>{% endif %}
+                </div>
+            </div>
+
+            <!-- Live total -->
+            <div style="background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.2); border-radius:10px; padding:1rem 1.5rem; display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
+                <span style="color:#fbbf24; font-weight:700;">Live Total Score</span>
+                <span id="liveTotal" style="font-size:1.8rem; font-weight:800; color:#fbbf24;">0 / 30</span>
+            </div>
+
+            <!-- Feedback -->
+            <div class="form-group" style="margin-bottom:2rem;">
+                <label style="font-weight:600; margin-bottom:0.5rem; display:block;">{{ form.feedback.label }}</label>
+                {{ form.feedback }}
+                {% if form.feedback.errors %}<div style="color:#f87171; font-size:0.8rem; margin-top:0.3rem;">{{ form.feedback.errors }}</div>{% endif %}
+            </div>
+
+            <div style="display:flex; gap:1rem; justify-content:flex-end;">
+                <a href="{% url 'judge_panel' submission.team.hackathon.id %}" class="btn-outline">Cancel</a>
+                <button type="submit" class="btn-primary" style="padding-left:2rem; padding-right:2rem;">
+                    {% if existing_score %}Update Score{% else %}Submit Score{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.score-select {
+    width: 100%;
+    padding: 0.6rem 0.5rem;
+    background: #1e1b4b;
+    border: 2px solid rgba(139, 92, 246, 0.4);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-align: center;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.score-select:hover,
+.score-select:focus {
+    border-color: var(--accent-primary);
+    background: #2d2b69;
+}
+.score-select option {
+    background: #1e1b4b;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 1rem;
+}
+textarea {
+    width: 100%;
+    box-sizing: border-box;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    color: white;
+    padding: 0.8rem 1rem;
+    font-family: inherit;
+    font-size: 0.95rem;
+    resize: vertical;
+}
+textarea:focus { outline: 2px solid var(--accent-primary); }
+</style>
+
+<script>
+function updateTotal() {
+    const inn = parseInt(document.getElementById('id_innovation').value) || 0;
+    const tech = parseInt(document.getElementById('id_technical_complexity').value) || 0;
+    const uiux = parseInt(document.getElementById('id_ui_ux').value) || 0;
+    document.getElementById('liveTotal').textContent = (inn + tech + uiux) + ' / 30';
+}
+document.getElementById('id_innovation').addEventListener('change', updateTotal);
+document.getElementById('id_technical_complexity').addEventListener('change', updateTotal);
+document.getElementById('id_ui_ux').addEventListener('change', updateTotal);
+updateTotal();
+</script>
+{% endblock %}

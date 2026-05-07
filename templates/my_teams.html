@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="hero" style="padding: 2rem 0;">
+    <h1>My <span style="color: var(--accent-primary)">Teams</span></h1>
+    <p>Manage your hackathon teams and project submissions.</p>
+</div>
+
+<div class="hackathon-grid">
+    {% for team in teams %}
+        <div class="glass-card">
+            <div class="mb-1">
+                <span class="tag">{{ team.hackathon.title }}</span>
+            </div>
+            
+            <h3 class="mb-1" style="font-size: 1.4rem;">{{ team.name }}</h3>
+            <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                <strong>Leader:</strong> {% if team.leader_name %}{{ team.leader_name }}{% else %}{{ team.leader.username }}{% endif %}<br>
+                <strong>Status:</strong> <span style="color: {% if team.status == 'Approved' %}#4ade80{% elif team.status == 'Rejected' %}#f87171{% else %}#fbbf24{% endif %}">{{ team.status }}</span><br>
+                <strong>Payment:</strong> 
+                {% if team.is_paid %}
+                    <span style="color: #4ade80;">{% if team.hackathon.registration_fee > 0 %}Paid{% else %}Free{% endif %}</span>
+                    <a href="{% url 'generate_invoice' team.id %}" target="_blank" style="margin-left: 10px; color: var(--accent-primary); text-decoration: none; font-size: 0.8rem;">📄 View Invoice</a>
+                {% else %}
+                    <span style="color: #f87171;">Pending</span>
+                    <a href="{% url 'retry_payment' team.id %}" style="margin-left: 10px; padding: 0.2rem 0.6rem; background: var(--accent-primary); color: white; border-radius: 4px; text-decoration: none; font-size: 0.8rem; font-weight: 600;">💳 Pay Now</a>
+                {% endif %}
+
+            </div>
+            
+            {% if team.is_paid or team.hackathon.registration_fee == 0 %}
+                {% if team.has_submission %}
+                    <div class="tag" style="background: rgba(34, 197, 94, 0.1); color: #4ade80; border-color: rgba(34, 197, 94, 0.2); width: 100%; text-align: center; margin-bottom: 1rem; padding: 0.8rem; box-sizing: border-box;">
+                        ✅ Project Submitted
+                    </div>
+                {% else %}
+                    <a href="{% url 'submit_project' team.id %}" class="btn-primary" style="width: 100%; text-align: center; display: block;">Submit Project</a>
+                {% endif %}
+            {% else %}
+                <div style="background: rgba(248, 113, 113, 0.1); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.2); border-radius: 8px; padding: 0.8rem; text-align: center;">
+                    Please complete payment to submit.
+                </div>
+            {% endif %}
+
+        </div>
+    {% empty %}
+        <div class="glass-card" style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem;">
+            <h3 style="color: var(--text-secondary); margin-bottom: 1rem;">You haven't joined any teams yet.</h3>
+            <a href="{% url 'home' %}" class="btn-outline">Find a Hackathon</a>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

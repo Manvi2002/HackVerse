@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 500px; margin: 4rem auto; padding: 2.5rem;">
+    <div class="mb-2" style="text-align: center;">
+        <h2 style="font-size: 2rem; color: var(--accent-secondary);">Register Team</h2>
+        <p style="color: var(--text-secondary);">Registering for: <strong style="color: white;">{{ hackathon.title }}</strong></p>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                    <div style="color: #f87171; font-size: 0.8rem; margin-top: 0.3rem;">
+                        {{ field.errors }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+        
+        <div style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
+            <a href="{% url 'hackathon_detail' hackathon.id %}" class="btn-outline">Cancel</a>
+            <button type="submit" class="btn-primary">Confirm Registration</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.querySelectorAll('input').forEach(input => {
+        if (input.type !== 'hidden' && input.type !== 'submit') {
+            input.classList.add('form-control');
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 4rem auto; text-align: center;">
+    <div class="glass-card" style="padding: 3rem;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">💳</div>
+        <h1 style="margin-bottom: 0.5rem;">Complete Registration</h1>
+        <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+            To participate in <strong>{{ hackathon.title }}</strong>, a registration fee of 
+            <span style="color: var(--accent-secondary); font-weight: 700; font-size: 1.2rem;">₹{{ hackathon.registration_fee }}</span> is required for your team <strong>{{ team.name }}</strong>.
+        </p>
+
+        <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; margin-bottom: 2.5rem; text-align: left; border: 1px solid var(--glass-border);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span>Registration Fee</span>
+                <span>₹{{ hackathon.registration_fee }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-weight: 700; border-top: 1px solid var(--glass-border); padding-top: 0.5rem; margin-top: 0.5rem; color: var(--accent-primary);">
+                <span>Total Amount</span>
+                <span>₹{{ hackathon.registration_fee }}</span>
+            </div>
+        </div>
+
+        <button id="rzp-button1" class="btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem;">
+            Pay with Razorpay
+        </button>
+    </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+var options = {
+    "key": "{{ razorpay_merchant_key }}",
+    "amount": "{{ amount|floatformat:0 }}",
+    "currency": "INR",
+    "name": "HackVerse Platform",
+    "description": "Registration Fee for {{ hackathon.title }}",
+    "order_id": "{{ razorpay_order_id }}",
+    "handler": function (response){
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = "{% url 'payment_handler' %}";
+        
+        var params = {
+            'razorpay_payment_id': response.razorpay_payment_id,
+            'razorpay_order_id': response.razorpay_order_id,
+            'razorpay_signature': response.razorpay_signature
+        };
+
+        for (var key in params) {
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = params[key];
+            form.appendChild(input);
+        }
+        
+        document.body.appendChild(form);
+        form.submit();
+    },
+    "prefill": {
+        "name": "{{ team.leader_name }}",
+        "email": "{{ team.leader_email }}",
+        "contact": "{{ team.leader_phone }}"
+    },
+    "theme": {
+        "color": "#6366f1"
+    }
+};
+var rzp1 = new Razorpay(options);
+document.getElementById('rzp-button1').onclick = function(e){
+    rzp1.open();
+    e.preventDefault();
+}
+</script>
+{% endblock %}

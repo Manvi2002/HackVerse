@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 900px; margin: 0 auto; padding: 0; overflow: hidden;">
+    {% if hackathon.banner %}
+        <img src="{{ hackathon.banner.url }}" alt="{{ hackathon.title }}" style="width: 100%; height: auto; max-height: 400px; object-fit: contain; background: var(--bg-secondary); display: block;">
+    {% else %}
+        <div style="width: 100%; height: 200px; background: linear-gradient(45deg, var(--bg-secondary), var(--accent-primary)); opacity: 0.8; display: flex; align-items: center; justify-content: center;">
+            <h1 style="font-size: 3rem; color: rgba(255,255,255,0.7);">{{ hackathon.title }}</h1>
+        </div>
+    {% endif %}
+
+    <div style="padding: 3rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem;">
+            <div>
+                <span class="tag mb-1">{{ hackathon.theme }}</span>
+                <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">{{ hackathon.title }}</h1>
+                <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">Starts: {{ hackathon.start_date }} | Ends: {{ hackathon.end_date }}</p>
+                <p style="font-weight: 700; color: {% if hackathon.registration_fee > 0 %}#fbbf24{% else %}#4ade80{% endif %};">
+                    Fee: {% if hackathon.registration_fee > 0 %}₹{{ hackathon.registration_fee }}{% else %}Free{% endif %}
+                </p>
+            </div>
+            {% if user.is_authenticated %}
+                <div style="display:flex; gap:0.8rem; flex-wrap:wrap;">
+                    <a href="{% url 'register_team' hackathon.id %}" class="btn-primary">Register Team</a>
+                    <a href="{% url 'leaderboard' hackathon.id %}" class="btn-outline">🏆 Leaderboard</a>
+                    {% if is_judge %}
+                        <a href="{% url 'judge_panel' hackathon.id %}" style="padding:0.6rem 1.2rem; background:rgba(139,92,246,0.15); border:1px solid rgba(139,92,246,0.3); border-radius:8px; color:#c4b5fd; font-weight:600; text-decoration:none; font-size:0.9rem;">⚖️ Judge Panel</a>
+                    {% endif %}
+                </div>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn-outline">Login to Register</a>
+            {% endif %}
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 3rem;">
+            <div>
+                <h3 class="mb-1" style="color: var(--accent-secondary);">About The Hackathon</h3>
+                <p style="line-height: 1.8; color: var(--text-secondary); white-space: pre-line;">{{ hackathon.description }}</p>
+                
+                <h3 class="mb-1 mt-2" style="color: var(--accent-secondary);">Registered Teams ({{ teams.count }})</h3>
+                {% if teams %}
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        {% for team in teams %}
+                            <div style="padding: 1rem; border: 1px solid var(--glass-border); border-radius: 8px; background: rgba(0,0,0,0.2);">
+                                <strong>{{ team.name }}</strong> 
+                                <div style="color: var(--text-secondary); font-size: 0.9rem; margin-top: 0.5rem;">
+                                    <strong>Leader:</strong> {% if team.leader_name %}{{ team.leader_name }}{% else %}{{ team.leader.username }}{% endif %}
+                                    {% if team.member2_name or team.member3_name or team.member4_name %}
+                                        <br><strong>Members:</strong>
+                                        {% if team.member2_name %}{{ team.member2_name }}{% endif %}
+                                        {% if team.member3_name %}, {{ team.member3_name }}{% endif %}
+                                        {% if team.member4_name %}, {{ team.member4_name }}{% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p style="color: var(--text-secondary);">No teams registered yet. Be the first!</p>
+                {% endif %}
+            </div>
+            
+            <div>
+                <div class="glass-card" style="padding: 1.5rem;">
+                    <h3 class="mb-1" style="font-size: 1.2rem; color: var(--accent-primary);">🏆 Prizes</h3>
+                    <p style="white-space: pre-line; color: var(--text-secondary);">{{ hackathon.prizes }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

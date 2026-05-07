@@ -1,0 +1,148 @@
+<!-- Floating Chatbot Widget -->
+<div id="hackbot-widget" style="position: fixed; bottom: 30px; right: 30px; z-index: 1000;">
+    
+    <!-- Chat Icon -->
+    <button id="hackbot-toggle" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; transition: transform 0.3s;" onclick="toggleChat()">
+        🤖
+    </button>
+
+    <!-- Chat Window -->
+    <div id="hackbot-window" class="glass-card" style="display: none; position: absolute; bottom: 80px; right: 0; width: 350px; height: 450px; flex-direction: column; padding: 0; overflow: hidden; border: 1px solid var(--accent-primary);">
+        
+        <!-- Header -->
+        <div style="background: rgba(99,102,241,0.2); padding: 1rem; border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; gap: 0.8rem;">
+            <div style="font-size: 1.5rem;">🤖</div>
+            <div>
+                <h4 style="margin: 0; font-size: 1rem; color: #fff;">HackBot</h4>
+                <span style="font-size: 0.75rem; color: #34d399;">● Online</span>
+            </div>
+            <button onclick="toggleChat()" style="margin-left: auto; background: none; border: none; color: var(--text-secondary); font-size: 1.2rem; cursor: pointer;">✕</button>
+        </div>
+
+        <!-- Chat History -->
+        <div id="hackbot-messages" style="flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; font-size: 0.9rem;">
+            <div class="bot-msg" style="align-self: flex-start; background: rgba(255,255,255,0.1); padding: 0.8rem 1rem; border-radius: 12px 12px 12px 0; max-width: 85%; line-height: 1.4;">
+                Hi there! 👋 I'm HackBot. I can help you with:
+                <br>• How to register/form teams
+                <br>• Upcoming deadlines
+                <br>• How to submit projects
+                <br>What do you need help with?
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div style="padding: 1rem; border-top: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); display: flex; gap: 0.5rem;">
+            <input type="text" id="hackbot-input" placeholder="Type a message..." style="flex: 1; padding: 0.6rem 1rem; border-radius: 20px; border: 1px solid var(--glass-border); background: rgba(255,255,255,0.05); color: #fff; outline: none;" onkeypress="if(event.key === 'Enter') sendHackbotMsg()">
+            <button onclick="sendHackbotMsg()" style="background: var(--accent-primary); border: none; width: 36px; height: 36px; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;">➤</button>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Custom Scrollbar for Chat */
+#hackbot-messages::-webkit-scrollbar {
+    width: 6px;
+}
+#hackbot-messages::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 3px;
+}
+.user-msg {
+    align-self: flex-end;
+    background: var(--accent-primary);
+    color: white;
+    padding: 0.8rem 1rem;
+    border-radius: 12px 12px 0 12px;
+    max-width: 85%;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+.bot-msg {
+    align-self: flex-start;
+    background: rgba(255,255,255,0.1);
+    padding: 0.8rem 1rem;
+    border-radius: 12px 12px 12px 0;
+    max-width: 85%;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+.typing-indicator {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--text-secondary);
+    border-radius: 50%;
+    animation: typing 1.4s infinite ease-in-out both;
+    margin: 0 2px;
+}
+.typing-indicator:nth-child(1) { animation-delay: -0.32s; }
+.typing-indicator:nth-child(2) { animation-delay: -0.16s; }
+@keyframes typing {
+    0%, 80%, 100% { transform: scale(0); }
+    40% { transform: scale(1); }
+}
+</style>
+
+<script>
+function toggleChat() {
+    const win = document.getElementById('hackbot-window');
+    const btn = document.getElementById('hackbot-toggle');
+    if (win.style.display === 'none') {
+        win.style.display = 'flex';
+        btn.style.transform = 'scale(0.8)';
+        document.getElementById('hackbot-input').focus();
+    } else {
+        win.style.display = 'none';
+        btn.style.transform = 'scale(1)';
+    }
+}
+
+async function sendHackbotMsg() {
+    const inputField = document.getElementById('hackbot-input');
+    const msgBox = document.getElementById('hackbot-messages');
+    const msg = inputField.value.trim();
+    if (!msg) return;
+
+    // Add User Message
+    inputField.value = '';
+    msgBox.innerHTML += `<div class="user-msg">${msg}</div>`;
+    msgBox.scrollTop = msgBox.scrollHeight;
+
+    // Show Typing Indicator
+    const typingId = 'typing-' + Date.now();
+    msgBox.innerHTML += `
+        <div id="${typingId}" class="bot-msg" style="padding: 0.5rem 1rem;">
+            <div class="typing-indicator"></div>
+            <div class="typing-indicator"></div>
+            <div class="typing-indicator"></div>
+        </div>
+    `;
+    msgBox.scrollTop = msgBox.scrollHeight;
+
+    try {
+        const response = await fetch('/chatbot/api/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ message: msg })
+        });
+        const data = await response.json();
+        
+        // Remove typing indicator
+        document.getElementById(typingId).remove();
+        
+        // Add Bot Reply
+        let reply = data.reply || "Sorry, I encountered an error.";
+        msgBox.innerHTML += `<div class="bot-msg">${reply}</div>`;
+        msgBox.scrollTop = msgBox.scrollHeight;
+
+    } catch (e) {
+        document.getElementById(typingId).remove();
+        msgBox.innerHTML += `<div class="bot-msg" style="color: #f87171;">Connection error. Please try again later.</div>`;
+        msgBox.scrollTop = msgBox.scrollHeight;
+    }
+}
+</script>

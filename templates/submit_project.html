@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="glass-card" style="max-width: 700px; margin: 2rem auto; padding: 2.5rem;">
+    <div class="mb-2" style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2 style="font-size: 2rem; color: var(--accent-secondary);">Submit Project</h2>
+            <p style="color: var(--text-secondary);">Submitting for team: <strong style="color: white;">{{ team.name }}</strong> ({{ team.hackathon.title }})</p>
+        </div>
+        <div style="font-size: 2rem;">🚀</div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label for="{{ form.project_title.id_for_label }}">{{ form.project_title.label }}</label>
+                {{ form.project_title }}
+                {% if form.project_title.errors %}<div style="color: #f87171; font-size: 0.8rem;">{{ form.project_title.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label for="{{ form.github_link.id_for_label }}">{{ form.github_link.label }}</label>
+                {{ form.github_link }}
+                {% if form.github_link.errors %}<div style="color: #f87171; font-size: 0.8rem;">{{ form.github_link.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label for="{{ form.project_file.id_for_label }}">{{ form.project_file.label }}</label>
+                {{ form.project_file }}
+                {% if form.project_file.errors %}<div style="color: #f87171; font-size: 0.8rem;">{{ form.project_file.errors }}</div>{% endif %}
+                <small style="color: var(--text-secondary); font-size: 0.8rem;">Supported formats: .zip, .rar. Ensure all project files are included.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.live_link.id_for_label }}">{{ form.live_link.label }}</label>
+                {{ form.live_link }}
+                {% if form.live_link.errors %}<div style="color: #f87171; font-size: 0.8rem;">{{ form.live_link.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.video_link.id_for_label }}">{{ form.video_link.label }}</label>
+                {{ form.video_link }}
+                {% if form.video_link.errors %}<div style="color: #f87171; font-size: 0.8rem;">{{ form.video_link.errors }}</div>{% endif %}
+            </div>
+
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+                {{ form.description }}
+                {% if form.description.errors %}<div style="color: #f87171; font-size: 0.8rem;">{{ form.description.errors }}</div>{% endif %}
+            </div>
+        </div>
+
+        <div style="margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem;">
+            <a href="{% url 'my_teams' %}" class="btn-outline">Cancel</a>
+            <button type="submit" class="btn-primary" style="padding-left: 2.5rem; padding-right: 2.5rem;">Submit Project</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.querySelectorAll('input:not([type="checkbox"]):not([type="file"]), textarea').forEach(input => {
+        input.classList.add('form-control');
+    });
+    document.querySelectorAll('input[type="file"]').forEach(input => {
+        input.style.color = "var(--text-secondary)";
+        input.style.marginTop = "0.5rem";
+    });
+</script>
+{% endblock %}
