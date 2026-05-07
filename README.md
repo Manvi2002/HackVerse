@@ -128,14 +128,9 @@ python manage.py createsuperuser
 python manage.py runserver
 🌐 Access Application
 
-Open browser and visit:
-
-http://127.0.0.1:8000/
-
 💳 Payment Integration
 HackVerse uses Razorpay Test Mode for payment processing.
 Features:
-
 Registration Fee Payment
 Payment Status Tracking
 Invoice Generation PDF
