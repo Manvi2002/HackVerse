@@ -68,15 +68,17 @@ Supports Admin, Users, and Judges
 Frontend
 HTML5
 CSS3
-Bootstrap
-JavaScript
+
 Backend
 Python
 Django Framework
+
 Database
 SQLite
+
 Authentication
 JWT (JSON Web Token)
+
 Payment Gateway
 Razorpay (Test Mode)
 
